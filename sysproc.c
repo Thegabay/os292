@@ -14,16 +14,16 @@ sys_fork(void)
 }
 
 int
-sys_exit(void)
+sys_exit(int status)
 {
-  exit();
+  exit(status);
   return 0;  // not reached
 }
 
 int
-sys_wait(void)
+sys_wait(int* status)
 {
-  return wait();
+  return wait(status);
 }
 
 int
@@ -88,4 +88,10 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+int
+sys_memsize(void)
+{
+  return memsize();
 }

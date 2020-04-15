@@ -225,7 +225,7 @@ fork(void)
 // An exited process remains in the zombie state
 // until its parent calls wait() to find out it exited.
 void
-exit(void)
+exit(int status)
 {
   struct proc *curproc = myproc();
   struct proc *p;
@@ -246,6 +246,7 @@ exit(void)
   iput(curproc->cwd);
   end_op();
   curproc->cwd = 0;
+  curproc->status = status;
 
   acquire(&ptable.lock);
 
@@ -270,7 +271,7 @@ exit(void)
 // Wait for a child process to exit and return its pid.
 // Return -1 if this process has no children.
 int
-wait(void)
+wait(int* status)
 {
   struct proc *p;
   int havekids, pid;
@@ -295,6 +296,7 @@ wait(void)
         p->name[0] = 0;
         p->killed = 0;
         p->state = UNUSED;
+        *status = p->status;
         release(&ptable.lock);
         return pid;
       }
@@ -302,6 +304,7 @@ wait(void)
 
     // No point waiting if we don't have any children.
     if(!havekids || curproc->killed){
+      *status = -1;
       release(&ptable.lock);
       return -1;
     }
@@ -531,4 +534,12 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+
+int
+memsize()
+{
+  uint memsize = myproc()->sz;
+  cprintf("The process is using: %dB\n", memsize);
+  return 0;
 }
